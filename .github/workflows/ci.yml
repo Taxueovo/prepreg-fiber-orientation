@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  release-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Python sources
+        run: python -m compileall -q DinoConv.py gst_baseline.py thesis_experiment_packages tests
+      - name: Run lightweight tests
+        run: python -m unittest discover -s tests -v
+      - name: Reject common private artifacts
+        shell: bash
+        run: |
+          if git ls-files | grep -E '(^|/)(database|data|datasets|runs|weights|checkpoints|output)/|\.(docx?|pth|pt|ckpt|onnx)$'; then
+            echo "Private or generated artifacts are tracked."
+            exit 1
+          fi

@@ -1,0 +1,52 @@
+# Local tools and operating-system files
+.DS_Store
+**/.DS_Store
+.claude/
+.vscode/
+.idea/
+AGENTS.md
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Private datasets and metadata
+database/
+data/
+datasets/
+/dataset_overview.json
+/*.csv
+
+# Model files and experiment outputs
+weights/
+checkpoints/
+runs/
+sweep_runs/
+output/
+reliability/
+thesis_experiment_packages/results/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.npy
+*.npz
+*.pkl
+
+# Manuscripts, internal research notes, and generated paper assets
+*.doc
+*.docx
+*.pdf
+paper_assets*/
+/SERVER_EXPERIMENT_AND_THESIS_GUIDE.md
+/thesis_format_distillation.md
+/build_*.py
+/fix_*.py
+/modify_paper.py
+/generate_section_docx.py
+/analyze_dataset.py
+/heatmap.py
+/plot_*.py
