@@ -1,4 +1,4 @@
-"""Reusable, executable bridge from thesis experiment scripts to DinoConv.py.
+"""Reusable, executable bridge from thesis experiment scripts to fiber_orientation.py.
 
 It intentionally refuses a missing requested checkpoint instead of allowing the
 original prototype's silent random-initialisation fallback.
@@ -41,27 +41,27 @@ def aggregate_parent_predictions(detail_csv: Path, output_csv: Path) -> None:
 def run_training(*, run_dir: Path, seed: int, epochs: int, weights: Path|None,
                  require_weights: bool, use_attention: bool, use_fft: bool,
                  use_uncertainty: bool, device: str) -> Path:
-    """Run one full DinoConv training job and return its newly-created run directory."""
+    """Run one full fiber_orientation training job and return its newly-created run directory."""
     import sys
     sys.path.insert(0, str(PROJECT))
-    import DinoConv as dc
+    import fiber_orientation as fo
     if require_weights and (weights is None or not weights.is_file()):
         raise FileNotFoundError("This control requires --weights to reference an existing checkpoint.")
-    data_dir=Path(os.environ.get("DINOCONV_DATA_DIR", PROJECT / "database")).expanduser()
+    data_dir=Path(os.environ.get("FIBER_ORIENTATION_DATA_DIR", PROJECT / "database")).expanduser()
     for split in ("train","val","test"):
         csv_path=data_dir / split / f"{split}.csv"
         image_root=data_dir / split / "images"
         if not csv_path.is_file() or not image_root.is_dir():
             raise FileNotFoundError(f"Missing dataset input: {csv_path} or {image_root}")
-        setattr(dc.CFG, f"PATCH_CSV_{split.upper()}", str(csv_path))
-        setattr(dc.CFG, f"{split.upper()}_ROOT", str(image_root))
-    dc.CFG.SEED=seed; dc.CFG.EPOCHS=epochs; dc.CFG.RUNS_DIR=str(run_dir)
-    dc.CFG.USE_ATTENTION=use_attention; dc.CFG.USE_FFT=use_fft; dc.CFG.USE_UNCERTAINTY=use_uncertainty
-    dc.CFG.DINOV3_CONVNEXT_PTH=str(weights) if weights else ""; dc.CFG.CONVNEXT_LOCAL_PTH=dc.CFG.DINOV3_CONVNEXT_PTH
-    dc.CFG.REQUIRE_PRETRAINED=require_weights; dc.CFG.DEVICE=device; dc.CFG.FORCE_CUDA=(device!="cpu"); dc.CFG.CUDA_DEVICE=device
-    dc.train_transform=dc.FiberTrainTransform(blur_p=dc.CFG.TRAIN_BLUR_P)
+        setattr(fo.CFG, f"PATCH_CSV_{split.upper()}", str(csv_path))
+        setattr(fo.CFG, f"{split.upper()}_ROOT", str(image_root))
+    fo.CFG.SEED=seed; fo.CFG.EPOCHS=epochs; fo.CFG.RUNS_DIR=str(run_dir)
+    fo.CFG.USE_ATTENTION=use_attention; fo.CFG.USE_FFT=use_fft; fo.CFG.USE_UNCERTAINTY=use_uncertainty
+    fo.CFG.DINOV3_CONVNEXT_PTH=str(weights) if weights else ""; fo.CFG.CONVNEXT_LOCAL_PTH=fo.CFG.DINOV3_CONVNEXT_PTH
+    fo.CFG.REQUIRE_PRETRAINED=require_weights; fo.CFG.DEVICE=device; fo.CFG.FORCE_CUDA=(device!="cpu"); fo.CFG.CUDA_DEVICE=device
+    fo.train_transform=fo.FiberTrainTransform(blur_p=fo.CFG.TRAIN_BLUR_P)
     before=set(run_dir.glob("FiberAngleNet_DINOv3_*")) if run_dir.exists() else set()
-    run_dir.mkdir(parents=True,exist_ok=True); dc.main()
+    run_dir.mkdir(parents=True,exist_ok=True); fo.main()
     created=sorted(set(run_dir.glob("FiberAngleNet_DINOv3_*"))-before, key=lambda x:x.stat().st_mtime)
     if not created: raise RuntimeError("Training finished without creating a run directory.")
     detail=created[-1]/"tables"/"best_test_details.csv"
@@ -76,20 +76,20 @@ def run_inference(*, checkpoint: Path, patch_csv: Path, image_root: Path, output
     import sys; sys.path.insert(0, str(PROJECT))
     import torch
     from torch.utils.data import DataLoader
-    import DinoConv as dc
+    import fiber_orientation as fo
     dev=torch.device(device)
-    model=dc.FiberAngleNet(local_pth="", use_attention=use_attention, use_fft=use_fft,
+    model=fo.FiberAngleNet(local_pth="", use_attention=use_attention, use_fft=use_fft,
                            use_uncertainty=use_uncertainty).to(dev)
     state=torch.load(checkpoint,map_location=dev)
     model.load_state_dict(state,strict=True)
-    ds=dc.PatchDataset(str(patch_csv),str(image_root),transform=dc.val_transform)
-    loader=DataLoader(ds,batch_size=dc.CFG.BATCH_SIZE,shuffle=False,num_workers=dc.CFG.NUM_WORKERS,
+    ds=fo.PatchDataset(str(patch_csv),str(image_root),transform=fo.val_transform)
+    loader=DataLoader(ds,batch_size=fo.CFG.BATCH_SIZE,shuffle=False,num_workers=fo.CFG.NUM_WORKERS,
                       pin_memory=(dev.type=="cuda"))
-    criterion=dc.AcuteAngleLoss(alpha=dc.CFG.LOSS_ALPHA,use_uncertainty=use_uncertainty,
-        min_std_deg=dc.CFG.MIN_STD_DEG,max_std_deg=dc.CFG.MAX_STD_DEG,std_reg_threshold=dc.CFG.STD_REG_THRESHOLD)
-    metrics=dc.evaluate(model,loader,dev,criterion,dev.type=="cuda",save_details=True,desc="External")
+    criterion=fo.AcuteAngleLoss(alpha=fo.CFG.LOSS_ALPHA,use_uncertainty=use_uncertainty,
+        min_std_deg=fo.CFG.MIN_STD_DEG,max_std_deg=fo.CFG.MAX_STD_DEG,std_reg_threshold=fo.CFG.STD_REG_THRESHOLD)
+    metrics=fo.evaluate(model,loader,dev,criterion,dev.type=="cuda",save_details=True,desc="External")
     output_dir.mkdir(parents=True,exist_ok=True)
-    patch_out=output_dir/"patch_predictions.csv"; dc.write_csv(str(patch_out),metrics["details"],list(metrics["details"][0]))
+    patch_out=output_dir/"patch_predictions.csv"; fo.write_csv(str(patch_out),metrics["details"],list(metrics["details"][0]))
     aggregate_parent_predictions(patch_out,output_dir/"parent_predictions.csv")
     (output_dir/"metrics.json").write_text(__import__('json').dumps({k:v for k,v in metrics.items() if k!='details'},ensure_ascii=False,indent=2),encoding="utf-8")
     return output_dir

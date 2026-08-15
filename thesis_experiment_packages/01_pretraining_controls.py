@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""E01: directly run locked pre-training comparisons with DinoConv.py."""
+"""E01: directly run locked pre-training comparisons with fiber_orientation.py."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path

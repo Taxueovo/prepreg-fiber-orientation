@@ -23,7 +23,7 @@ This is a **sanitized code release**. It intentionally excludes raw images, labe
 
 ```text
 .
-├── DinoConv.py                  # Training / regression entry point
+├── fiber_orientation.py         # Training / regression entry point
 ├── gst_baseline.py              # Gradient Structure Tensor baseline
 ├── thesis_experiment_packages/  # E01–E08 reproducibility protocols
 ├── tests/                       # Release checks (no deep-learning deps)
@@ -72,7 +72,7 @@ sample_0001.jpg,source_001.jpg,45.0,0,0
 ## Training
 
 ```bash
-python DinoConv.py \
+python fiber_orientation.py \
   --data-dir /path/to/database \
   --weights /path/to/dinov3_convnext_tiny.pth \
   --require-pretrained \
@@ -86,10 +86,10 @@ If `--weights` is omitted, the backbone uses random initialization. For controll
 Common paths may be configured with environment variables:
 
 ```bash
-export DINOCONV_DATA_DIR=/path/to/database
-export DINOCONV_WEIGHTS=/path/to/checkpoint.pth
-export DINOCONV_RUNS_DIR=/path/to/runs
-export DINOCONV_DEVICE=cuda:0
+export FIBER_ORIENTATION_DATA_DIR=/path/to/database
+export FIBER_ORIENTATION_WEIGHTS=/path/to/checkpoint.pth
+export FIBER_ORIENTATION_RUNS_DIR=/path/to/runs
+export FIBER_ORIENTATION_DEVICE=cuda:0
 ```
 
 Training artifacts are written to `runs/` by default and are ignored by Git. Configuration snapshots and prediction exports remove workstation-specific absolute paths.
@@ -105,15 +105,15 @@ python gst_baseline.py \
 
 ## Reproducibility Experiments
 
-See [thesis_experiment_packages/README.md](thesis_experiment_packages/README.md) for the eight experiment protocols. Training scripts read from `DINOCONV_DATA_DIR` or the project-local `database/` directory. Generated outputs are written under the ignored `thesis_experiment_packages/results/` directory.
+See [thesis_experiment_packages/README.md](thesis_experiment_packages/README.md) for the eight experiment protocols. Training scripts read from `FIBER_ORIENTATION_DATA_DIR` or the project-local `database/` directory. Generated outputs are written under the ignored `thesis_experiment_packages/results/` directory.
 
 ## Validation
 
 The release checks do not require deep-learning dependencies:
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/dinoconv-pycache python -m compileall -q \
-  DinoConv.py gst_baseline.py thesis_experiment_packages tests
+PYTHONPYCACHEPREFIX=/tmp/fiber-orientation-pycache python -m compileall -q \
+  fiber_orientation.py gst_baseline.py thesis_experiment_packages tests
 python -m unittest discover -s tests -v
 ```
 

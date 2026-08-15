@@ -24,9 +24,9 @@ import torch.nn.functional as F
 # ===================== Config =====================
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DATA_DIR = Path(
-    os.environ.get("DINOCONV_DATA_DIR", PROJECT_ROOT / "database")
+    os.environ.get("FIBER_ORIENTATION_DATA_DIR", PROJECT_ROOT / "database")
 ).expanduser()
-DEFAULT_WEIGHTS = os.environ.get("DINOCONV_WEIGHTS", "")
+DEFAULT_WEIGHTS = os.environ.get("FIBER_ORIENTATION_WEIGHTS", "")
 
 
 @dataclass
@@ -42,9 +42,9 @@ class Config:
     DINOV3_CONVNEXT_PTH: str = DEFAULT_WEIGHTS
     CONVNEXT_LOCAL_PTH: str = DEFAULT_WEIGHTS
 
-    FORCE_CUDA: bool = os.environ.get("DINOCONV_FORCE_CUDA", "0") == "1"
+    FORCE_CUDA: bool = os.environ.get("FIBER_ORIENTATION_FORCE_CUDA", "0") == "1"
     CUDA_DEVICE: str = "cuda:0"
-    DEVICE: str = os.environ.get("DINOCONV_DEVICE", "")
+    DEVICE: str = os.environ.get("FIBER_ORIENTATION_DEVICE", "")
 
     EPOCHS: int = 150
     WARMUP_EPOCHS: int = 5
@@ -69,7 +69,7 @@ class Config:
     EPS_NORM: float = 1e-8
     CLIP_GRAD_NORM: float = 1.0
     SEED: int = 42
-    RUNS_DIR: str = os.environ.get("DINOCONV_RUNS_DIR", "runs")
+    RUNS_DIR: str = os.environ.get("FIBER_ORIENTATION_RUNS_DIR", "runs")
 
     FFT_R1_RATIO: float = 0.05
     FFT_R2_RATIO: float = 0.40
