@@ -1,8 +1,13 @@
-# DINOv3-ConvNeXt for Surface Fiber Orientation Estimation
+# Prepreg Fiber Orientation Estimation
 
-Research code for estimating the acute surface-fiber orientation of carbon-fiber prepreg. The model uses a ConvNeXt-Tiny spatial backbone, supports compatible DINOv3 initialization, and combines optional orientation-aware attention, annular FFT features, and heteroscedastic uncertainty estimation.
+[![CI](https://github.com/Taxueovo/prepreg-fiber-orientation/actions/workflows/ci.yml/badge.svg)](https://github.com/Taxueovo/prepreg-fiber-orientation/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB.svg)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org)
 
-This is a sanitized code release. It intentionally excludes raw images, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths. The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
+Research code for estimating the **acute surface-fiber orientation angle** of carbon-fiber prepreg from microscopy patches. The model uses a **ConvNeXt-Tiny** spatial backbone, optionally initialized from **DINOv3** self-supervised weights, and combines orientation-aware attention, an annular FFT frequency branch, and heteroscedastic uncertainty estimation.
+
+This is a **sanitized code release**. It intentionally excludes raw images, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths. The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
 
 ## Highlights
 
@@ -12,7 +17,20 @@ This is a sanitized code release. It intentionally excludes raw images, label ma
 - Acute-angle regression with optional heteroscedastic loss.
 - Validation-based early stopping, per-epoch metrics, checkpointing, and path-safe prediction exports.
 - A Gradient Structure Tensor (GST) classical computer-vision baseline.
-- Reproducibility scripts for initialization controls, factorial ablation, external-domain evaluation, uncertainty calibration, metrology validation, label efficiency, rotation equivariance, and latency analysis.
+- Eight reproducibility protocols (E01–E08): initialization controls, factorial ablation, external-domain evaluation, uncertainty calibration, metrology validation, label efficiency, rotation equivariance, and latency analysis.
+
+## Repository Layout
+
+```text
+.
+├── DinoConv.py                  # Training / regression entry point
+├── gst_baseline.py              # Gradient Structure Tensor baseline
+├── thesis_experiment_packages/  # E01–E08 reproducibility protocols
+├── tests/                       # Release checks (no deep-learning deps)
+├── .github/workflows/ci.yml     # CI pipeline
+├── requirements.txt
+└── LICENSE
+```
 
 ## Installation
 
@@ -87,7 +105,7 @@ python gst_baseline.py \
 
 ## Reproducibility Experiments
 
-See [thesis_experiment_packages/README.md](thesis_experiment_packages/README.md) for eight experiment protocols. Training scripts read from `DINOCONV_DATA_DIR` or the project-local `database/` directory. Generated outputs are written under the ignored `thesis_experiment_packages/results/` directory.
+See [thesis_experiment_packages/README.md](thesis_experiment_packages/README.md) for the eight experiment protocols. Training scripts read from `DINOCONV_DATA_DIR` or the project-local `database/` directory. Generated outputs are written under the ignored `thesis_experiment_packages/results/` directory.
 
 ## Validation
 
@@ -103,4 +121,4 @@ Full training requires legally obtained data and a compatible checkpoint. Follow
 
 ## License
 
-No open-source license is currently granted; all rights are reserved. Add an explicit license before allowing third parties to copy, modify, or redistribute the project.
+Distributed under the [MIT License](LICENSE). Data, labels, and pretrained checkpoints are not covered by this license.
