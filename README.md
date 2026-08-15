@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="Prepreg Fiber Orientation Estimation" width="92%">
+</p>
+
 # Prepreg Fiber Orientation Estimation
 
 [![CI](https://github.com/Taxueovo/prepreg-fiber-orientation/actions/workflows/ci.yml/badge.svg)](https://github.com/Taxueovo/prepreg-fiber-orientation/actions/workflows/ci.yml)
@@ -7,7 +11,21 @@
 
 Research code for estimating the **acute surface-fiber orientation angle** of carbon-fiber prepreg from microscopy patches. The model uses a **ConvNeXt-Tiny** spatial backbone, optionally initialized from **DINOv3** self-supervised weights, and combines orientation-aware attention, an annular FFT frequency branch, and heteroscedastic uncertainty estimation.
 
-This is a **sanitized code release**. It intentionally excludes raw images, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths. The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
+> **Sanitized code release.** Raw images, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths are intentionally excluded. The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
+
+## Table of Contents
+
+- [Highlights](#highlights)
+- [Method Overview](#method-overview)
+- [Repository Layout](#repository-layout)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Dataset Layout](#dataset-layout)
+- [Training](#training)
+- [GST Baseline](#gst-baseline)
+- [Reproducibility Experiments](#reproducibility-experiments)
+- [Validation](#validation)
+- [License](#license)
 
 ## Highlights
 
@@ -19,6 +37,25 @@ This is a **sanitized code release**. It intentionally excludes raw images, labe
 - A Gradient Structure Tensor (GST) classical computer-vision baseline.
 - Eight reproducibility protocols (E01–E08): initialization controls, factorial ablation, external-domain evaluation, uncertainty calibration, metrology validation, label efficiency, rotation equivariance, and latency analysis.
 
+## Method Overview
+
+A ConvNeXt-Tiny backbone extracts spatial features from microscopy patches. An optional **Gabor orientation attention** module (inserted after backbone stage 2) learns an orientation-relevant attention map, while an optional **annular FFT branch** pools frequency content in a ring band around the spectrum center. The two streams are fused and fed to an angle regression head; an optional heteroscedastic head predicts per-sample log-variance to quantify uncertainty.
+
+```mermaid
+flowchart LR
+    P["Patch<br/>(H×W×3)"] --> B["ConvNeXt-Tiny<br/>backbone"]
+    B --> G["Gabor orientation<br/>attention"]
+    G --> PF["Adaptive<br/>avg-pool"]
+    P --> F["Annular FFT<br/>branch"]
+    F --> C["Fuse"]
+    PF --> C
+    C --> MLP["Fusion MLP"]
+    MLP --> A["Angle head<br/>θ ∈ [0°, 90°]"]
+    MLP --> U["Log-var head<br/>σ (uncertainty)"]
+```
+
+The target angle is folded into the acute range `[0°, 90°]` before regression; the predicted angle is recovered as `θ = 90° · sigmoid(head)`.
+
 ## Repository Layout
 
 ```text
@@ -27,9 +64,24 @@ This is a **sanitized code release**. It intentionally excludes raw images, labe
 ├── gst_baseline.py              # Gradient Structure Tensor baseline
 ├── thesis_experiment_packages/  # E01–E08 reproducibility protocols
 ├── tests/                       # Release checks (no deep-learning deps)
+├── docs/banner.svg              # Repository banner
 ├── .github/workflows/ci.yml     # CI pipeline
 ├── requirements.txt
 └── LICENSE
+```
+
+## Quick Start
+
+```bash
+git clone https://github.com/Taxueovo/prepreg-fiber-orientation.git
+cd prepreg-fiber-orientation
+
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+python fiber_orientation.py --data-dir /path/to/database --device cuda:0
 ```
 
 ## Installation
