@@ -11,7 +11,7 @@
 
 Research code for estimating the **acute surface-fiber orientation angle** of carbon-fiber prepreg from microscopy patches. The model uses a **ConvNeXt-Tiny** spatial backbone, optionally initialized from **DINOv3** self-supervised weights, and combines orientation-aware attention, an annular FFT frequency branch, and heteroscedastic uncertainty estimation.
 
-> **Sanitized code release.** Raw images, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths are intentionally excluded. The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
+> **Sanitized code release.** The full raw dataset, label manifests, model weights, experiment outputs, manuscripts, author information, and machine-specific paths are intentionally excluded. A few de-identified sample patches are included under `dataset/samples/` for illustration; see [`dataset/README.md`](dataset/README.md). The repository does not claim benchmark results that cannot be independently verified from the published artifacts.
 
 ## Table of Contents
 
@@ -60,6 +60,7 @@ The target angle is folded into the acute range `[0°, 90°]` before regression;
 
 ```text
 .
+├── dataset/                     # De-identified sample patches + dataset README
 ├── fiber_orientation.py         # Training / regression entry point
 ├── gst_baseline.py              # Gradient Structure Tensor baseline
 ├── thesis_experiment_packages/  # E01–E08 reproducibility protocols
@@ -97,7 +98,7 @@ python -m pip install -r requirements.txt
 
 ## Dataset Layout
 
-The dataset is user-supplied and must not be committed to Git. The default layout is:
+The full dataset is user-supplied and must not be committed to Git; only a small set of de-identified sample patches is included. The default layout is:
 
 ```text
 database/
@@ -120,6 +121,10 @@ sample_0001.jpg,source_001.jpg,45.0,0,0
 ```
 
 `patch_filename` must be a safe path relative to the corresponding `images/` directory. `angle` is folded into the acute range `[0°, 90°]`. The `source_image`, `x`, and `y` fields support parent-image traceability; the training loader directly consumes `patch_filename` and `angle`.
+
+### Sample patches
+
+Six de-identified 512×512 sample patches spanning the orientation-angle range (`≈41°–88°`) are provided under [`dataset/samples/`](dataset/samples/) so the data appearance and format are visible without downloading the full set. See [`dataset/README.md`](dataset/README.md) for the manifest format and full-dataset statistics.
 
 ## Training
 
