@@ -1,7 +1,7 @@
-# E02 模块析因消融
+# E02: Factorial Component Ablation
 
-目标：在方向选择注意力、FFT 分支和异方差损失三个二元因素上完成 2×2×2=8 个配置，而不是以当前单次最优数值判断“协同”。当前已有 5 个单次图块级快照，可作为原型依据，但不能替代此包。
+Objective: evaluate orientation-aware attention, the FFT branch, and heteroscedastic loss as three binary factors in a complete `2 × 2 × 2` design. A small set of single-run snapshots cannot establish component synergy.
 
-执行示例：`python thesis_experiment_packages/02_factorial_ablation.py --attention 1 --fft 0 --uncertainty 1 --weights /绝对路径/dinov3.pth`。对每个配置运行 5 个种子，输出母图级 MAE/RMSE。超参数（尤其 FFT r1/r2、损失权重和 early-stop）只能利用验证集冻结；不能分别为每一配置用测试集寻优。
+Example: `python thesis_experiment_packages/02_factorial_ablation.py --attention 1 --fft 0 --uncertainty 1 --weights /path/to/dinov3.pth`. Run five seeds for each configuration and report parent-level MAE and RMSE. Freeze hyperparameters using the validation set only; do not tune FFT radii, loss weights, or stopping criteria separately on test results.
 
-论文中将主结果填入表 4.4，并补充交互作用解释：例如比较“加 FFT 的差异”在有/无注意力条件下是否一致。若单模块改善而联合变差，应如实分析，而不要将所有模块描述为正向叠加。
+Report main effects and interactions. If a component improves one configuration but degrades another, describe the interaction directly rather than assuming additive benefits.

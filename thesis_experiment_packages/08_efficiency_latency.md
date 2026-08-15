@@ -1,7 +1,7 @@
-# E08 推理效率与系统节拍
+# E08: Inference Efficiency and System Latency
 
-目标：报告真实端到端性能，而非只报模型前向时间。运行 `python thesis_experiment_packages/08_efficiency_latency.py` 生成模板；使用固定硬件、软件版本、batch=1 和预热后的重复测量，记录读取、预处理、推理、结果写出以及端到端总时间。
+Objective: report measured end-to-end performance rather than model-forward time alone. Run `python thesis_experiment_packages/08_efficiency_latency.py` to generate a template. Under fixed hardware and software, batch size 1, and a documented warm-up, record loading, preprocessing, inference, output writing, and end-to-end latency.
 
-填完 CSV 后运行 `python thesis_experiment_packages/08_efficiency_latency.py --samples latency.csv`，输出平均值、P50、P95、吞吐量和峰值显存。采集、传输与人工复核如未计入端到端样本，必须在论文中单独列出，不能以模型延迟代替产线节拍。
+Analyze the completed CSV with `--samples latency.csv` to obtain mean, P50, P95, throughput, and peak memory. Acquisition, transfer, and human review must be reported separately if they are not included in the end-to-end samples.
 
-第 5.4 节报告硬件、软件、图像尺寸、测量次数、延迟分布、吞吐量、显存、参数量和 FLOPs；如没有真实产线集成，不应外推“满足在线部署”。
+Document hardware, software, image size, sample count, latency distribution, throughput, memory, parameter count, and FLOPs. Do not extrapolate to production-line readiness without a real integrated-system evaluation.

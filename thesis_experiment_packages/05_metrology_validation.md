@@ -1,7 +1,7 @@
-# E05 真值计量与标注重复性
+# E05: Reference Metrology and Annotation Repeatability
 
-当前白色标记线 + Hough 直线标签的合成不确定度记录为 ±0.46°，与模型 MAE 同一量级。必须用独立证据评价，否则 0.01° 量级模型差异没有工程解释基础。
+Objective: quantify reference-value bias and repeatability before interpreting small model differences. When label uncertainty is comparable with model error, it must be treated as part of the measurement system rather than as background context.
 
-建议使用标准旋转台在 30°--90°多个角度采集，每个角度至少多次重复，并尽量覆盖多名标注者和多个采集会话。运行 `python thesis_experiment_packages/05_metrology_validation.py` 创建表头，填完后加 `--measurements` 生成偏差、重复性标准差和 RMSE。
+Acquire repeated measurements at multiple known angles, preferably across operators and acquisition sessions. Run `python thesis_experiment_packages/05_metrology_validation.py` to create the template, then pass the completed file with `--measurements` to compute bias, repeatability standard deviation, and RMSE.
 
-第 2.3 与 5.3 节报告：偏差随参考角的变化、重复性/再现性、Bland--Altman 图，以及模型误差相对于真值不确定度的大小。不要把标签不确定度仅作为背景数字。
+Report bias versus reference angle, repeatability and reproducibility, a Bland-Altman analysis, and model error relative to reference uncertainty.

@@ -288,8 +288,9 @@ class FFTOrientationModule(nn.Module):
 
 class GaborAttention(nn.Module):
     """
-    可学习方向注意力模块。
-    [FIXED-B] 插入 ConvNeXt-Tiny stage2 (timm 索引 [2]) 之后，该处通道数为 384。
+    Learnable orientation-aware attention module.
+    [FIXED-B] Inserted after ConvNeXt-Tiny stage 2 (timm index 2), whose
+    output has 384 channels in the standard Tiny configuration.
     """
 
     def __init__(self, channels: int = 384, num_orientations: int = 8):  # [FIXED-B] 384
@@ -323,8 +324,8 @@ class GaborAttention(nn.Module):
 # ===================== Main Model =====================
 class FiberAngleNet(nn.Module):
     """
-    [FIXED-B] 手动走 backbone 各 stage，将 Gabor 注意力真正插入 stage2 之后，
-              使其对 stage3/stage4 的输出产生实际影响。
+    [FIXED-B] Traverse the backbone stages explicitly so Gabor attention is
+    applied after stage 2 and affects the outputs of stages 3 and 4.
     """
 
     def __init__(self, local_pth: str = "",
@@ -342,17 +343,17 @@ class FiberAngleNet(nn.Module):
         try:
             import timm
         except ImportError:
-            raise ImportError("请安装 timm 库: pip install timm")
+            raise ImportError("Install timm with: pip install timm")
 
-        # [FIXED-B] 不再使用 features_only，而是保留完整模型，以便手动调用各 stage
+        # [FIXED-B] Keep the full model so each stage can be called explicitly.
         backbone = timm.create_model(
             'convnext_tiny',
             pretrained=False,
-            num_classes=0,       # 去掉分类头
-            global_pool='',      # 关闭全局池化,后面我们自己做
+            num_classes=0,       # Remove the classification head.
+            global_pool='',      # Pool explicitly in this model.
         )
 
-        # 加载 DINOv3 预训练权重
+        # Load compatible DINOv3 pretrained weights.
         if local_pth and os.path.exists(local_pth):
             print(f"[Backbone] Loading DINOv3-ConvNeXt from {local_pth}")
             state_dict = torch.load(local_pth, map_location="cpu")
@@ -380,29 +381,30 @@ class FiberAngleNet(nn.Module):
             )
         elif CFG.REQUIRE_PRETRAINED:
             raise FileNotFoundError(
-                "预训练对照要求指定有效权重；当前未找到 DINOV3_CONVNEXT_PTH。"
+                "This pretraining control requires a valid checkpoint, but "
+                "DINOV3_CONVNEXT_PTH was not found."
             )
         else:
             print("[Backbone] WARNING: DINOv3 weights not found, using random initialization")
 
         self.backbone = backbone
 
-        # [FIXED-B] 动态确认 stage2 的输出通道,避免硬编码错误
-        # timm 的 ConvNeXt-Tiny: [96, 192, 384, 768]
+        # [FIXED-B] Infer stage-2 channels instead of relying on a fixed value.
+        # timm ConvNeXt-Tiny channels: [96, 192, 384, 768].
         stage2_channels = self._infer_stage_channels(backbone, stage_idx=2, default=384)
         last_channels = getattr(backbone, "num_features", 768)
         print(f"[Backbone] stage2 channels = {stage2_channels}, "
               f"last channels = {last_channels}")
 
-        # [FIXED-B] Gabor 用实际的 stage2 通道数实例化
+        # [FIXED-B] Initialize Gabor attention with the inferred channel count.
         self.gabor = (GaborAttention(channels=stage2_channels, num_orientations=num_orientations)
                       if use_attention else nn.Identity())
 
         self.fft_module = (FFTOrientationModule(r1_ratio=fft_r1, r2_ratio=fft_r2, pool_size=fft_pool)
                            if use_fft else None)
 
-        # [FIXED-B] 方案 B 下 Gabor 是串行注意力,不并入 fusion,
-        #           因此 fused_dim 仍然是 last_channels + fft_dim
+        # [FIXED-B] Gabor attention is serial, not concatenated at fusion;
+        # fused_dim therefore remains last_channels + fft_dim.
         fused_dim = last_channels + (self.fft_module.out_dim if self.fft_module else 0)
 
         self.fusion = nn.Sequential(
@@ -424,7 +426,7 @@ class FiberAngleNet(nn.Module):
 
     @staticmethod
     def _infer_stage_channels(backbone: nn.Module, stage_idx: int, default: int) -> int:
-        """[FIXED-B] 优先通过 feature_info 读取,失败则返回默认值."""
+        """Read the stage width from feature_info, with a safe fallback."""
         try:
             return int(backbone.feature_info.channels()[stage_idx])
         except Exception:
@@ -432,16 +434,16 @@ class FiberAngleNet(nn.Module):
 
     def _forward_backbone_with_gabor(self, x: torch.Tensor) -> torch.Tensor:
         """
-        [FIXED-B] 手动遍历 backbone,将 Gabor 插入 stage2 之后。
-        timm ConvNeXt forward_features 等价路径: stem -> stages -> norm_pre
+        Traverse the backbone explicitly and insert Gabor attention after
+        stage 2. This mirrors timm's stem -> stages -> norm_pre path.
         """
         x = self.backbone.stem(x)
         x = self.backbone.stages[0](x)   # 96
         x = self.backbone.stages[1](x)   # 192
         x = self.backbone.stages[2](x)   # 384
-        x = self.gabor(x)                # 可由 USE_ATTENTION 关闭以形成匹配消融
+        x = self.gabor(x)                # Disabled by USE_ATTENTION for ablation.
         x = self.backbone.stages[3](x)   # 768
-        # norm_pre 在 timm 里要么是 LayerNorm,要么是 Identity,都安全可调
+        # timm defines norm_pre as either LayerNorm or Identity.
         if hasattr(self.backbone, "norm_pre"):
             x = self.backbone.norm_pre(x)
         return x
@@ -714,7 +716,7 @@ def main():
         std_reg_threshold=CFG.STD_REG_THRESHOLD,
     )
 
-    # [FIXED-B] 精确按 "backbone.*" 前缀分组,避免原来模糊匹配误伤 head_*/fusion.norm
+    # [FIXED-B] Group parameters by the exact "backbone.*" prefix.
     backbone_params, new_params = [], []
     for name, p in model.named_parameters():
         if not p.requires_grad:

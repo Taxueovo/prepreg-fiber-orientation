@@ -20,13 +20,13 @@ def corr(x,y):
     return float("nan") if not d else sum((a-mx)*(b-my) for a,b in zip(x,y))/d
 def analyze(path: Path):
     rows=list(csv.DictReader(path.open(encoding="utf-8"))); required={"y_true_deg","y_pred_deg","pred_std_deg"}
-    if not rows or not required.issubset(rows[0]): raise ValueError(f"CSV必须包含 {sorted(required)}")
+    if not rows or not required.issubset(rows[0]): raise ValueError(f"CSV must contain {sorted(required)}")
     err=[abs(float(r['y_pred_deg'])-float(r['y_true_deg'])) for r in rows]; std=[max(float(r['pred_std_deg']),1e-9) for r in rows]
     out={"n_parents":len(rows),"mae_deg":mean(err),"rmse_deg":math.sqrt(mean([e*e for e in err])),"spearman_std_abs_error":corr(rank(std),rank(err)),"mpiW_95_deg":mean([2*Z[.95]*s for s in std])}
     for level,z in Z.items(): out[f"picp_{int(level*100)}"] = mean([float(e)<=z*s for e,s in zip(err,std)])
     return out
 def main():
-    p=argparse.ArgumentParser(description="E04 回归不确定性校准")
+    p=argparse.ArgumentParser(description="E04 regression uncertainty calibration")
     p.add_argument("--predictions",type=Path); p.add_argument("--output-dir",type=Path,default=Path(__file__).with_name("results")/"E04_uncertainty")
     a=p.parse_args(); a.output_dir.mkdir(parents=True,exist_ok=True)
     if a.predictions: (a.output_dir/"summary.json").write_text(json.dumps(analyze(a.predictions),ensure_ascii=False,indent=2),encoding="utf-8")

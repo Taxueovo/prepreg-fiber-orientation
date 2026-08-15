@@ -1,7 +1,7 @@
-# E03 外部域与成像鲁棒性
+# E03: External-Domain and Imaging Robustness
 
-目标：避免把同一批次、同一照明、同一采集会话的内部测试误写为泛化能力。将外部图块 CSV 与图像目录准备好后，直接运行：`python thesis_experiment_packages/03_external_domain.py --checkpoint best_model.pth --patch-csv 外部.csv --image-root 外部图像目录 --attention 1 --fft 1 --uncertainty 1`。脚本会保存逐图块和逐母图预测，并在首次运行时创建外部母图登记表；请补全批次、采集日期、照明、设备和工作距离。
+Objective: distinguish internal testing from genuine domain transfer. Run `python thesis_experiment_packages/03_external_domain.py --checkpoint best_model.pth --patch-csv external.csv --image-root /path/to/external-images --attention 1 --fft 1 --uncertainty 1`. The script exports patch- and parent-level predictions and creates an external-domain registry for batch, date, illumination, device, and working-distance metadata.
 
-外部数据的第一轮必须是零样本推理：不微调、不调阈值、不以其选择模型。若需要少样本适配，另建适配训练子集并与零样本结果并列，不能混为“外部测试”。每个域至少报告母图数、MAE、RMSE、偏差、95% CI 和典型失败案例。
+The first external evaluation must be zero-shot: no fine-tuning, threshold adjustment, or model selection on external data. Report any later few-shot adaptation separately. For each domain, report the number of parent images, MAE, RMSE, bias, a 95% confidence interval, and representative failure cases.
 
-论文填入第 5.1 节：内部测试、零样本外部测试和适配后测试应是三组独立表格或曲线。
+Present internal, zero-shot external, and adapted results as separate result groups.

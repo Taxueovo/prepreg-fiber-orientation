@@ -1,7 +1,7 @@
-# E06 标注效率学习曲线
+# E06: Label-Efficiency Learning Curves
 
-目标：量化有限独立母图标注条件下的性能变化，并检验 DINOv3 是否在低标注比例更有价值。比例为 10%、25%、50%、100%，每个比例与每个初始化都使用相同 5 个嵌套随机种子。
+Objective: measure performance as the number of independently labeled parent images changes, and test whether DINOv3 is especially useful in low-label regimes. Use 10%, 25%, 50%, and 100% nested subsets with the same five seeds for each initialization.
 
-若已有冻结训练母图 CSV，可运行：`python thesis_experiment_packages/06_label_efficiency.py --train-parents train_parents.csv`。CSV 仅需 `parent_id`；脚本会输出嵌套母图子集。不要从图块而非母图随机抽样，也不要改变验证/测试集。
+Run `python thesis_experiment_packages/06_label_efficiency.py --train-parents train_parents.csv` with a CSV containing `parent_id`. Sample parent images rather than patches, and keep validation and test sets fixed.
 
-第 4.5 节绘制“训练母图比例—母图级 MAE”曲线，带每比例的均值与95% CI。仅当低比例下的差异也稳定时，才可表述自监督迁移降低标注需求。
+Plot training-parent fraction against parent-level MAE with a mean and 95% confidence interval at each fraction. Claim reduced label demand only when the low-label difference is stable across seeds.

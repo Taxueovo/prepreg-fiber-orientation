@@ -6,7 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 
 def main():
-    p=argparse.ArgumentParser(description="E05 计量验证")
+    p=argparse.ArgumentParser(description="E05 reference metrology validation")
     p.add_argument("--measurements",type=Path); p.add_argument("--output-dir",type=Path,default=Path(__file__).with_name("results")/"E05_metrology")
     a=p.parse_args(); a.output_dir.mkdir(parents=True,exist_ok=True)
     if not a.measurements:

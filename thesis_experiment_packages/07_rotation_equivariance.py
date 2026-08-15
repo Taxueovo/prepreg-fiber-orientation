@@ -8,7 +8,7 @@ def acute(x: float) -> float:
     x=x%180.0
     return 180.0-x if x>90.0 else x
 def main():
-    p=argparse.ArgumentParser(description="E07 旋转等变性")
+    p=argparse.ArgumentParser(description="E07 known-rotation equivariance")
     p.add_argument("--pairs",type=Path); p.add_argument("--output-dir",type=Path,default=Path(__file__).with_name("results")/"E07_rotation")
     a=p.parse_args(); a.output_dir.mkdir(parents=True,exist_ok=True)
     if not a.pairs:

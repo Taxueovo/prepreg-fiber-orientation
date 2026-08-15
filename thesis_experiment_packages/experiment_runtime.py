@@ -20,7 +20,7 @@ def sha256(path: Path) -> str:
 
 def parent_id(filename: str) -> str:
     match=re.search(r"src([^_./\\]+)", Path(filename).name)
-    if not match: raise ValueError(f"无法从图块文件名提取母图ID: {filename}")
+    if not match: raise ValueError(f"Cannot extract a parent-image ID from: {filename}")
     return match.group(1)
 
 def aggregate_parent_predictions(detail_csv: Path, output_csv: Path) -> None:
@@ -46,13 +46,13 @@ def run_training(*, run_dir: Path, seed: int, epochs: int, weights: Path|None,
     sys.path.insert(0, str(PROJECT))
     import DinoConv as dc
     if require_weights and (weights is None or not weights.is_file()):
-        raise FileNotFoundError("此对照要求 --weights 指向存在的预训练检查点。")
+        raise FileNotFoundError("This control requires --weights to reference an existing checkpoint.")
     data_dir=Path(os.environ.get("DINOCONV_DATA_DIR", PROJECT / "database")).expanduser()
     for split in ("train","val","test"):
         csv_path=data_dir / split / f"{split}.csv"
         image_root=data_dir / split / "images"
         if not csv_path.is_file() or not image_root.is_dir():
-            raise FileNotFoundError(f"缺少当前项目数据: {csv_path} 或 {image_root}")
+            raise FileNotFoundError(f"Missing dataset input: {csv_path} or {image_root}")
         setattr(dc.CFG, f"PATCH_CSV_{split.upper()}", str(csv_path))
         setattr(dc.CFG, f"{split.upper()}_ROOT", str(image_root))
     dc.CFG.SEED=seed; dc.CFG.EPOCHS=epochs; dc.CFG.RUNS_DIR=str(run_dir)
@@ -63,7 +63,7 @@ def run_training(*, run_dir: Path, seed: int, epochs: int, weights: Path|None,
     before=set(run_dir.glob("FiberAngleNet_DINOv3_*")) if run_dir.exists() else set()
     run_dir.mkdir(parents=True,exist_ok=True); dc.main()
     created=sorted(set(run_dir.glob("FiberAngleNet_DINOv3_*"))-before, key=lambda x:x.stat().st_mtime)
-    if not created: raise RuntimeError("训练结束但未找到运行目录。")
+    if not created: raise RuntimeError("Training finished without creating a run directory.")
     detail=created[-1]/"tables"/"best_test_details.csv"
     if detail.is_file(): aggregate_parent_predictions(detail, created[-1]/"tables"/"best_test_parent_predictions.csv")
     return created[-1]
@@ -72,7 +72,7 @@ def run_inference(*, checkpoint: Path, patch_csv: Path, image_root: Path, output
                   use_attention: bool, use_fft: bool, use_uncertainty: bool, device: str) -> Path:
     """Evaluate a frozen checkpoint on a CSV/image-root pair and emit patch/parent predictions."""
     if not checkpoint.is_file() or not patch_csv.is_file() or not image_root.is_dir():
-        raise FileNotFoundError("checkpoint、patch_csv 和 image_root 必须均存在。")
+        raise FileNotFoundError("checkpoint, patch_csv, and image_root must all exist.")
     import sys; sys.path.insert(0, str(PROJECT))
     import torch
     from torch.utils.data import DataLoader

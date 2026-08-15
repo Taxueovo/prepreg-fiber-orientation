@@ -6,11 +6,11 @@ from pathlib import Path
 
 FRACTIONS=[0.10,0.25,0.50,1.00]; SEEDS=[42,2024,3407,5179,9001]
 def main():
-    p=argparse.ArgumentParser(description="E06 标注效率模板")
-    p.add_argument("--train-parents",type=Path,help="含 parent_id 的冻结训练母图CSV")
+    p=argparse.ArgumentParser(description="E06 label-efficiency subset generator")
+    p.add_argument("--train-parents",type=Path,help="Frozen training-parent CSV containing parent_id")
     p.add_argument("--output-dir",type=Path,default=Path(__file__).with_name("results")/"E06_label_efficiency")
     a=p.parse_args(); a.output_dir.mkdir(parents=True,exist_ok=True)
-    manifest={"experiment":"E06_label_efficiency","fractions":FRACTIONS,"seeds":SEEDS,"rule":"各子集只从冻结训练母图抽样；验证集、测试集与增强/预算保持不变。"}
+    manifest={"experiment":"E06_label_efficiency","fractions":FRACTIONS,"seeds":SEEDS,"rule":"Sample subsets only from frozen training parents; keep validation, test, augmentation, and budget fixed."}
     (a.output_dir/"manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     if a.train_parents:
         rows=list(csv.DictReader(a.train_parents.open(encoding="utf-8"))); ids=sorted({r['parent_id'] for r in rows})

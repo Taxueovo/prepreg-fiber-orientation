@@ -1,16 +1,16 @@
-# 硕士论文补充实验包
+# Supplementary Experiment Suite
 
-本目录对应论文附录 B 的 E01--E08。每个子项由一个 Python 脚本和一份说明组成；脚本只会在其自身的 `results/` 目录创建模板或分析你显式提供的 CSV，不会改写 `database/`、模型权重或现有实验记录。
+This directory contains eight reproducibility protocols, E01 through E08. Each protocol includes a Python script and a short methods note. Scripts create templates or analyze explicitly supplied CSV files under their own `results/` directory; they do not overwrite the dataset, model weights, or existing experiment records.
 
-建议统一流程：先运行各脚本生成 `manifest.json` / CSV 模板；将每次训练的配置、随机种子、检查点哈希和逐图块预测保存到该实验包的 `results/`；最后运行脚本的分析模式生成论文表格所需的汇总值。所有正式模型比较必须使用同一份冻结的母图级划分，测试集不能参与选参。
+Use one frozen parent-image split for every formal comparison. Generate the protocol manifest or CSV template first, preserve the configuration, random seed, checkpoint hash, and per-patch predictions for every run, and then run the analysis step. The test set must never be used for model or hyperparameter selection.
 
-| 包 | 论文位置 | 核心问题 |
+| Protocol | Focus | Primary question |
 |---|---|---|
-| E01 | 4.5 | DINOv3 是否降低标注依赖 |
-| E02 | 4.4 | 各模块是否有稳定独立贡献 |
-| E03 | 5.1 | 跨批次、光照、设备能否泛化 |
-| E04 | 5.2 | 不确定性是否校准且支持拒判 |
-| E05 | 2.3、5.3 | 真值和标注是否足够可靠 |
-| E06 | 4.5 | 标签数量变化下的学习曲线 |
-| E07 | 5.1 | 对已知旋转是否保持等变性 |
-| E08 | 5.4 | 是否达到实际检测节拍 |
+| E01 | Initialization controls | Does DINOv3 initialization reduce label requirements? |
+| E02 | Factorial ablation | Do the proposed components make stable independent contributions? |
+| E03 | External domains | Does the frozen model generalize across batches and imaging conditions? |
+| E04 | Uncertainty | Is uncertainty calibrated and useful for selective prediction? |
+| E05 | Metrology | Are the reference values and annotations sufficiently reliable? |
+| E06 | Label efficiency | How does performance vary with the number of labeled parent images? |
+| E07 | Rotation equivariance | Do predictions follow known image rotations? |
+| E08 | System efficiency | What are the measured latency and throughput under a fixed protocol? |
